@@ -1,0 +1,150 @@
+/* ===============================
+   Общие переменные темы/макета
+   =============================== */
+:root{
+  --accent:#0b5fff;
+  --muted:#667085;
+  --bg:#f7f8fb;
+  --panel:#fff;
+  --line:#e6e9ef;
+  --soft:#eef2ff;
+  --ink:#101828;
+
+  /* размеры панелей */
+  --topbar-h: 136px;   /* высота топбара в развёрнутом виде */
+  --sidebar-w: 420px;  /* ширина левого сайдбара */
+  --drawer-peek: 14px; /* язычок видимый у свёрнутой панели */
+}
+
+/* базовые стили */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+  background:var(--bg); color:var(--ink);
+}
+.app{min-height:100vh}
+
+/* ===============================
+   Кнопки сворачивания панелей
+   =============================== */
+.toggle{
+  position:fixed; z-index:20; border:1px solid var(--soft);
+  background:#fff; color:#0b2b4a;
+  border-radius:10px; padding:4px 8px; cursor:pointer;
+  box-shadow:0 2px 8px rgba(11,95,255,.15);
+}
+.toggle-top { top:6px; right:10px; }
+.toggle-left{ top:50%; left:6px; transform:translateY(-50%); }
+
+/* ===============================
+   Верхняя панель (топбар)
+   =============================== */
+.topbar{
+  position:fixed; left:0; right:0; top:0; z-index:10;
+  background:linear-gradient(180deg,#fff,#fbfdff);
+  border-bottom:1px solid var(--line);
+  padding:10px 12px;
+  display:flex; flex-wrap:wrap; gap:10px;
+  transition:transform .25s ease;
+}
+.drawer-top.collapsed{ transform: translateY(calc(-100% + var(--drawer-peek))); }
+
+.group{
+  background:var(--panel); border:1px solid var(--soft);
+  border-radius:12px; padding:8px 10px
+}
+.group-title{font-size:12px; color:var(--muted); margin-bottom:6px}
+.row{display:flex; align-items:flex-end; gap:8px; flex-wrap:wrap}
+.row.compact label{display:flex; flex-direction:column; font-size:12px; color:var(--muted)}
+.row.compact input,.row.compact select{min-width:78px}
+
+.small{padding:6px 8px; font-size:13px}
+.inline{display:inline-flex; align-items:center; gap:6px}
+
+/* ===============================
+   Рабочая область
+   =============================== */
+.workspace{
+  display:grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height:100vh;
+  padding-top:var(--topbar-h); /* отступ под верхнюю панель */
+}
+
+/* Когда верхняя панель свёрнута — уменьшаем верхний отступ до «язычка» */
+body.topbar-collapsed .workspace{
+  padding-top: calc(var(--drawer-peek) + 8px);
+}
+
+/* Левый сайдбар */
+.left{
+  border-right:1px solid var(--line);
+  background:#fff; overflow:auto; padding:12px;
+  transition:transform .25s ease;
+}
+.drawer-left.collapsed{ transform: translateX(calc(-100% + var(--drawer-peek))); }
+.workspace.sidebar-collapsed{ grid-template-columns: calc(var(--drawer-peek) + 8px) 1fr; }
+
+/* Правый контейнер */
+.right{ min-width:0; overflow:auto; display:flex }
+
+/* Разделы слева */
+.section{margin:10px 0}
+.section-title{
+  font-weight:700; color:#0b2b4a; margin:8px 0;
+  border-left:4px solid var(--accent); padding-left:8px
+}
+.muted{color:var(--muted); font-size:13px}
+.grid.two{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+
+/* Поля и кнопки */
+label{font-size:13px; color:var(--muted)}
+input[type=number],input[type=text],select{
+  width:100%; padding:8px; border:1px solid #dbe2f0;
+  border-radius:8px; background:#fcfdff
+}
+button{
+  padding:8px 10px; border-radius:8px; border:0;
+  background:var(--accent); color:#fff; cursor:pointer;
+  box-shadow:0 2px 8px rgba(11,95,255,.15)
+}
+button.ghost{background:#fff; color:var(--accent); border:1px solid #e0e6ff; box-shadow:none}
+button:disabled{opacity:.6; cursor:not-allowed}
+
+.box{border:1px solid var(--soft); border-radius:12px; background:#fcfdff; padding:8px}
+.list{max-height:220px; overflow:auto}
+.point-card{padding:8px; border-radius:10px}
+.point-card:hover{background:#fafcff}
+.coords{font-size:12px; color:#444}
+
+.log{
+  height:120px; background:#0b1b3a; color:#d7e1ff; padding:8px;
+  border-radius:8px; overflow:auto; font-family:ui-monospace,Consolas,monospace
+}
+
+.mt{margin-top:8px}
+
+/* ===============================
+   Холст
+   =============================== */
+#canvasWrap{
+  flex:1; min-height:0; width:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding:16px;
+  background:linear-gradient(180deg,#eef3ff,#ffffff)
+}
+canvas{
+  background:#fff; border:1px solid #d7dbe6; border-radius:10px;
+  box-shadow:0 6px 24px rgba(12,20,80,.06)
+}
+
+/* Курсоры по режимам */
+canvas.mode-add{cursor:crosshair}
+canvas.mode-move{cursor:grab}
+canvas.mode-rotate{cursor:crosshair}
+canvas.mode-actions{cursor:pointer}
+canvas.mode-objects{cursor:crosshair}
+canvas.mode-measure{cursor:crosshair}
+canvas.grabbing{cursor:grabbing!important}
+

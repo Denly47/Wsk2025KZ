@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Планировщик маршрутов робота</title>
+  <!-- Общие стили приложения -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="topbar-collapsed"><!-- класс topbar-collapsed: экономим вертикаль с самого старта -->
+
+<div class="app">
+
+  <!-- Кнопки сворачивания панелей -->
+  <button id="toggleTopbar"  class="toggle toggle-top"  title="Скрыть/показать верхнюю панель">▼</button>
+  <button id="toggleSidebar" class="toggle toggle-left" title="Скрыть/показать боковую панель">⟨</button>
+
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ (компактная): Поле, Робот/Сим, Файлы -->
+  <div id="topbar" class="topbar drawer-top collapsed"><!-- collapsed по умолчанию -->
+    <!-- Поле / холст -->
+    <div class="group">
+      <div class="group-title">Поле</div>
+      <div class="row compact">
+        <label>Ширина (см)<input id="fieldW" type="number" value="300" step="1" min="10"></label>
+        <label>Высота (см)<input id="fieldH" type="number" value="200" step="1" min="10"></label>
+        <label>Холст (px)<input   id="canvasW" type="number" value="900" step="10" min="200"></label>
+        <button id="applySize" class="small">Применить</button>
+        <button id="clearAll"  class="small ghost">Очистить</button>
+      </div>
+    </div>
+
+    <!-- Параметры робота + управление симуляцией -->
+    <div class="group">
+      <div class="group-title">Робот / Сим</div>
+      <div class="row compact">
+        <label>W (см)<input id="robotW" type="number" value="30" step="1"></label>
+        <label>H (см)<input id="robotH" type="number" value="30" step="1"></label>
+        <label>Драйв
+          <select id="driveMode">
+            <option>Omni</option>
+            <option>Tank</option>
+          </select>
+        </label>
+        <label>V (см/с)<input id="robotSpeed" type="number" value="50" step="1"></label>
+        <label>Ось 0°
+          <select id="robotZero">
+            <option value="down">0° вниз</option>
+            <option value="up">0° вверх</option>
+            <option value="right">0° вправо</option>
+            <option value="left">0° влево</option>
+          </select>
+        </label>
+        <button id="startSim" class="small">Старт (P)</button>
+        <button id="stopSim"  class="small ghost" disabled>Стоп</button>
+      </div>
+    </div>
+
+    <!-- Файлы -->
+    <div class="group">
+      <div class="group-title">Файлы</div>
+      <div class="row compact">
+        <button id="saveJSON"    class="small">Сохранить (Ctrl+S)</button>
+        <button id="loadJSONBtn" class="small ghost">Загрузить</button>
+        <input id="loadJSON" type="file" accept="application/json" hidden>
+      </div>
+    </div>
+  </div>
+
+  <!-- РАБОЧЕЕ ПРОСТРАНСТВО: слева – инструменты и данные, справа – карта -->
+  <div id="workspace" class="workspace">
+
+    <!-- ЛЕВАЯ ВЕРТИКАЛЬНАЯ ПАНЕЛЬ: инструменты, точки, сценарии, лог -->
+    <aside id="sidebar" class="left drawer-left">
+      <!-- Быстрые подсказки -->
+      <div class="section">
+        <div class="section-title">Подсказки</div>
+        <div><strong id="title">Поле: 300 × 200 см</strong></div>
+        <div class="muted">Координаты: (0,0) — левый-нижний угол.</div>
+        <div class="muted">Прямая (L) фиксирует X/​Y к предыдущей точке (Shift — временно).</div>
+        <div class="muted">Квант угла делает угол кратным шагу (по умолчанию 5°).</div>
+        <div class="muted">Привязка 0/90° — только для Tank.</div>
+      </div>
+
+      <!-- ИНСТРУМЕНТЫ: режимы + ассистенты -->
+      <div class="section">
+        <div class="section-title">Инструменты</div>
+        <div class="row compact">
+          <button id="modeAdd"  class="small">Добавление (A)</button>
+          <button id="modeMove" class="small ghost">Перемещение (M)</button>
+          <button id="modeRot"  class="small ghost">Угол (R)</button>
+          <button id="modeActs" class="small ghost">Сценарии (S)</button>
+          <button id="deletePoint" class="small ghost">Удалить</button>
+        </div>
+        <div class="row compact" style="margin-top:6px">
+          <button id="assistStraight" class="small ghost" title="Фиксировать горизонт/вертикаль. Shift — временно">
+            Прямая: выкл (L)
+          </button>
+          <button id="assistTankSnap" class="small" title="Для Tank: защёлкивать к 0/90/180/270">
+            Привязка 0/90°: вкл (K)
+          </button>
+          <label>Квант угла
+            <select id="angleStep">
+              <option value="1">1°</option>
+              <option value="5" selected>5°</option>
+              <option value="10">10°</option>
+              <option value="15">15°</option>
+            </select>
+          </label>
+          <label class="inline"><input id="angleSnap" type="checkbox" checked> включить</label>
+        </div>
+      </div>
+            <!-- ОБЪЕКТЫ / ЛИНЕЙКА -->
+      <div class="section">
+        <div class="section-title">Объекты и линейка</div>
+        <div class="row compact">
+          <label>Тип
+            <select id="objType">
+              <option value="wall">Стена</option>
+              <option value="shelf">Полка</option>
+              <option value="box">Кубик</option>
+              <option value="cylinder">Цилиндр</option>
+              <option value="zone">Зона</option>
+              <option value="custom">Другое</option>
+            </select>
+          </label>
+          <label>W (см)<input id="objW" type="number" value="30" step="1"></label>
+          <label>H (см)<input id="objH" type="number" value="5" step="1"></label>
+        </div>
+        <div class="row compact" style="margin-top:6px">
+          <label>Цвет<input id="objColor" type="color" value="#888888"></label>
+          <label>Название<input id="objLabel" type="text" placeholder="например, Стеллаж A1"></label>
+        </div>
+        <div class="row compact" style="margin-top:6px">
+          <button id="modeObjects" class="small ghost">Объекты (O)</button>
+          <button id="modeMeasure" class="small ghost">Линейка (D)</button>
+          <button id="deleteObject" class="small ghost">Удалить объект</button>
+        </div>
+        <div class="section" id="objectProps" style="display:none">
+  <div class="section-title">Свойства объекта</div>
+  <div class="grid two">
+    <label>X (см)<input id="objX" type="number" step="0.1"></label>
+    <label>Y (см)<input id="objY" type="number" step="0.1"></label>
+    <label>W (см)<input id="objPW" type="number" step="0.1"></label>
+    <label>H (см)<input id="objPH" type="number" step="0.1"></label>
+    <label>Угол (°)<input id="objAngle" type="number" step="1"></label>
+  </div>
+  <button id="applyObjProps" class="small">Применить</button>
+</div>
+
+      </div>
+
+
+      <!-- Список точек -->
+      <div class="section">
+        <div class="section-title">Список точек</div>
+        <div id="pointsList" class="box list"></div>
+      </div>
+
+      <!-- Выбранная точка -->
+      <div class="section">
+        <div class="section-title">Выбранная точка</div>
+        <div class="grid two">
+          <label>x (см)<input id="selX" type="number" step="0.1"></label>
+          <label>y (см)<input id="selY" type="number" step="0.1"></label>
+          <label>угол (°)<input id="selHead" type="number" step="1"></label>
+        </div>
+        <div class="row mt">
+          <button id="applyPoint" class="small">Применить</button>
+          <button id="deselect"   class="small ghost">Снять выделение</button>
+        </div>
+        <div class="muted">Q/E — ±шаг угла у выбранной точки.</div>
+      </div>
+
+      <!-- Сценарии -->
+      <div class="section">
+        <div class="section-title">Сценарии (для выбранной)</div>
+        <div class="grid two">
+          <label>Команда
+            <select id="actionName"></select>
+          </label>
+          <label class="inline"><input id="actionParallel" type="checkbox"> Параллельно</label>
+        </div>
+        <div id="actionArgsForm" class="box action-args"></div>
+        <div class="row mt">
+          <button id="addAction" class="small">Добавить действие</button>
+        </div>
+        <div id="actionsList" class="box list mt"></div>
+      </div>
+
+      <!-- Лог -->
+      <div class="section">
+        <div class="section-title">Лог</div>
+        <pre id="logOutput" class="log"></pre>
+      </div>
+    </aside>
+
+    <!-- ПРАВАЯ ОБЛАСТЬ: холст с полем -->
+    <main class="right">
+      <div id="canvasWrap">
+        <canvas id="fieldCanvas" width="900" height="600"></canvas>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<!-- Модули JS: порядок важен -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
