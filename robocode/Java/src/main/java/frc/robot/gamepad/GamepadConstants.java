@@ -1,0 +1,36 @@
+package frc.robot.gamepad;
+
+public class GamepadConstants
+{
+    // Controller USB ports
+    public static final int DRIVE_USB_PORT      = 0;
+
+    // Logitech F310
+    // Buttons
+    public static final int A_BUTTON            = 1;
+    public static final int B_BUTTON            = 2;
+    public static final int X_BUTTON            = 3;
+    public static final int Y_BUTTON            = 4;
+    public static final int LEFT_BUMPER         = 5;
+    public static final int RIGHT_BUMPER        = 6;
+    public static final int BACK_BUTTON         = 7;
+    public static final int START_BUTTON        = 8;
+    public static final int LEFT_STICK_BUTTON   = 9;
+    public static final int RIGHT_STICK_BUTTON  = 10;
+
+    // Joystick axes
+    public static final int LEFT_STICK_X        = 0;
+    public static final int LEFT_STICK_Y        = 1;
+    public static final int RIGHT_STICK_X       = 4;
+    public static final int RIGHT_STICK_Y       = 5;
+
+    // Triggers (treated as axes)
+    public static final int LEFT_TRIGGER        = 2;
+    public static final int RIGHT_TRIGGER       = 3;
+
+    // D-Pad (POV Hat)
+    public static final int DPAD_UP             = 0;
+    public static final int DPAD_RIGHT          = 90;
+    public static final int DPAD_DOWN           = 180;
+    public static final int DPAD_LEFT           = 270;
+}
